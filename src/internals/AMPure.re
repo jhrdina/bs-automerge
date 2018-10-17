@@ -5,7 +5,7 @@ let encodeTimestamp = ((i, rep)) =>
 
 module Timestamp = {
   type t = timestamp;
-  let compare = (a, b) => compare(a, b);
+  let compare = compare;
 };
 module TimestampMap = Map.Make(Timestamp);
 /* VAL */
@@ -55,11 +55,7 @@ let encodeCursorItem =
 
 module CursorItem = {
   type t = cursorItem;
-  let compare = (a, b) =>
-    switch (a, b) {
-    | (Timestamp(aT), Timestamp(bT)) => compare(aT, bT)
-    | (a, b) => compare(a, b)
-    };
+  let compare = compare;
 };
 module CursorItemMap = Map.Make(CursorItem);
 module CursorItemSet = Set.Make(CursorItem);
@@ -76,20 +72,7 @@ let encodeTypedKey =
 
 module TypedKey = {
   type t = typedKey;
-  let typedKeyToInt =
-    fun
-    | MapT(_) => 0
-    | ListT(_) => 1
-    | RegT(_) => 2;
-  let compare = (a, b) =>
-    if (compare(typedKeyToInt(a), typedKeyToInt(b)) === 0) {
-      0;
-    } else {
-      let MapT(aT) | ListT(aT) | RegT(aT) = a;
-      let MapT(bT) | ListT(bT) | RegT(bT) = b;
-      /* TODO: Check timestamp comparison */
-      compare(aT, bT);
-    };
+  let compare = compare;
 };
 
 module TypedKeyMap = Map.Make(TypedKey);
@@ -107,6 +90,7 @@ type op = {
   id: timestamp,
   /* Set of causal dependencies:
      all operations from any replica that had been applied on this replica before this operation */
+  /* TODO: Convert to set */
   deps: list(timestamp),
   cur: cursor,
   mut,
@@ -134,6 +118,7 @@ type ctx = {
      Note: In Automerge called '_inbound' in opSet.byObject[id]
      */
   /* TODO: check type, maybe cursorItem */
+  /* TODO: Convert to real set to prevent duplicates */
   pres: CursorItemMap.t(list(timestamp)),
   values: TimestampMap.t(value),
 };
@@ -210,6 +195,7 @@ type opSet = list(op);
 type state = {
   replicaId,
   queue: opSet,
+  /* TODO: Convert to Set */
   ops: list(timestamp),
   ctx,
   recv: opSet,

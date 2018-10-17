@@ -103,19 +103,45 @@ let logState = s => {
   Js.log(reformat(Json.stringify(AMPure.encodeState(s))));
 };
 
-let s = AMPure.make("aaaaaaaa");
-logState(s);
-/* let s = AMPure.(doc->makeAssign(s, EmptyArray));
-   logState(s);
-   let s = AMPure.(doc->idx(s, 0)->makeInsert(s, EmptyArray));
-   logState(s); */
+let docA = AMPure.make("aaaaaaaa");
+logState(docA);
 
-let s =
+let docA =
   AMPure.(
-    s
+    docA
     |> makeAssign(doc, EmptyObject)
     |> makeAssign(doc->get("AAA"), Int(1111))
     |> makeAssign(doc->get("BBB"), Int(2222))
     |> makeDelete(doc->get("AAA"))
   );
-logState(s);
+
+let ops = docA |> AMPure.send;
+
+let docB =
+  AMPure.(
+    make("bbbbbbbbb")
+    |> makeAssign(doc, EmptyObject)
+    |> makeAssign(doc->get("CCC"), EmptyArray)
+  );
+let docB =
+  AMPure.(docB |> makeInsert(doc->get("CCC")->idx(0, docB), Int(42)));
+let docB =
+  AMPure.(
+    docB
+    |> makeAssign(doc->get("CCC")->idx(1, docB), Int(43))
+    |> recv(ops)
+  );
+
+let ops =
+  AMPure.(
+    docA
+    |> recv(docB |> send)
+    |> makeAssign(doc->get("BBB"), Int(333))
+    |> send
+  );
+
+let docB = AMPure.(docB |> makeAssign(doc->get("BBB"), Int(444)));
+
+let docB = AMPure.(docB |> recv(ops));
+
+logState(docB);
