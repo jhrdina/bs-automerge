@@ -244,7 +244,7 @@ let get = (cur, key) => {
   };
 };
 
-let idx = (cur, state, i) => {
+let idx = (cur, i, state) => {
   let rec idx_i = (cur, ctx: ctx, i) =>
     switch (cur) {
     /* IDX2 */
@@ -533,7 +533,7 @@ let listFindOpt = (f, l) =>
   };
 
 /* APPLY-REMOTE */
-let recv = (state, ops) => {
+let recv = (ops, state) => {
   let opHasFulfilledDeps = (state, op) =>
     listFindOpt(dep => !List.mem(dep, state.ops), op.deps) == None;
 
@@ -585,8 +585,8 @@ let makeOp = (state, cur, mut) => {
   apply(state, {id: (ctr + 1, p), deps: state.ops, cur, mut});
 };
 
-let makeAssign = (cur, state, value) => makeOp(state, cur, Assign(value));
-let makeInsert = (cur, state, value) => makeOp(state, cur, Insert(value));
+let makeAssign = (cur, value, state) => makeOp(state, cur, Assign(value));
+let makeInsert = (cur, value, state) => makeOp(state, cur, Insert(value));
 let makeDelete = (cur, state) => makeOp(state, cur, Delete);
 
 let make = replicaId => {

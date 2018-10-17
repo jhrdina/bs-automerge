@@ -103,14 +103,19 @@ let logState = s => {
   Js.log(reformat(Json.stringify(AMPure.encodeState(s))));
 };
 
-let s = AMPure.make("RRRR");
+let s = AMPure.make("aaaaaaaa");
 logState(s);
 /* let s = AMPure.(doc->makeAssign(s, EmptyArray));
    logState(s);
    let s = AMPure.(doc->idx(s, 0)->makeInsert(s, EmptyArray));
    logState(s); */
-let s = AMPure.(doc->makeAssign(s, EmptyObject));
-let s = AMPure.(doc->get("AAA")->makeAssign(s, Int(1111)));
-let s = AMPure.(doc->get("BBB")->makeAssign(s, Int(2222)));
-let s = AMPure.(doc->get("AAA")->makeDelete(s));
+
+let s =
+  AMPure.(
+    s
+    |> makeAssign(doc, EmptyObject)
+    |> makeAssign(doc->get("AAA"), Int(1111))
+    |> makeAssign(doc->get("BBB"), Int(2222))
+    |> makeDelete(doc->get("AAA"))
+  );
 logState(s);
