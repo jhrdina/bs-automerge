@@ -17,7 +17,7 @@ npm run start
 # Run
 
 ```
-node src/Test.bs.js
+node src/internals/Test.bs.js
 ```
 
 # Editor
