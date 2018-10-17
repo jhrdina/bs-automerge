@@ -10,6 +10,7 @@
     "in-source": true
   },
   "suffix": ".bs.js",
+  "bsc-flags": ["-bs-g"],
   "bs-dependencies": ["bs-immutablejs", "rex-json"],
   "warnings": {
     "error": "+101"
