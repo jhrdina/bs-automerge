@@ -1,0 +1,32 @@
+{
+  "name": "bs-automerge",
+  "version": "0.1.0",
+  "description": "Reason + BuckleScript bindings to Automerge",
+  "main": "index.js",
+  "scripts": {
+    "build": "bsb -make-world",
+    "start": "bsb -make-world -w",
+    "clean": "bsb -clean-world",
+    "prepare": "npm link bs-platform"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jhrdina/bs-automerge.git"
+  },
+  "homepage": "https://github.com/jhrdina/bs-automerge#readme",
+  "bugs": "https://github.com/jhrdina/bs-automerge/issues",
+  "keywords": [
+    "reason",
+    "bucklescript",
+    "crdt",
+    "data structures",
+    "replication"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "automerge": "^0.8.0",
+    "bs-immutablejs": "github:reasonml-community/bs-immutablejs",
+    "rex-json": "^1.4.0"
+  }
+}
