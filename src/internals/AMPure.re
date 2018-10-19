@@ -247,10 +247,20 @@ let idx = (cur, i, state) => {
         if (k_new != Tail) {
           if (ctx.pres |> CursorItemMap.find(k_new) != []) {
             /* IDX3 */
-            idx_i(Cursor([], k_new), ctx, i - 1);
+            /* Skipping over an item */
+            idx_i(
+              Cursor([], k_new),
+              ctx,
+              i - 1,
+            );
           } else {
             /* IDX4 */
-            idx_i(Cursor([], k_new), ctx, i);
+            /* Skipping over a deleted item */
+            idx_i(
+              Cursor([], k_new),
+              ctx,
+              i,
+            );
           };
         } else {
           raise(Not_found);
