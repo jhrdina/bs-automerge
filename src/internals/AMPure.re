@@ -1,7 +1,7 @@
 type replicaId = string;
 type timestamp = (int, replicaId);
 let encodeTimestamp = ((i, rep)) =>
-  "TS(" ++ string_of_int(i) ++ ", r" ++ rep ++ ")";
+  "TS(" ++ string_of_int(i) ++ ", " ++ rep ++ ")";
 
 module Timestamp = {
   type t = timestamp;
