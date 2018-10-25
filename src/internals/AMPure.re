@@ -61,9 +61,13 @@ module CursorItemMap = Map.Make(CursorItem);
 module CursorItemSet = Set.Make(CursorItem);
 
 type typedKey =
+  /* Map - in ctx uses: items, pres */
   | MapT(cursorItem)
+  /* List - in ctx uses: items, next, pres */
   | ListT(cursorItem)
+  /* Register - in ctx uses: values */
   | RegT(cursorItem);
+
 let encodeTypedKey =
   fun
   | MapT(ci) => "Map(" ++ encodeCursorItem(ci) ++ ")"
