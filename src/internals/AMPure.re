@@ -1,4 +1,6 @@
 type replicaId = string;
+module ReplicaIdMap = Map.Make(String);
+
 type timestamp = (int, replicaId);
 let encodeTimestamp = ((i, rep)) =>
   "TS(" ++ string_of_int(i) ++ ", " ++ rep ++ ")";
@@ -196,6 +198,13 @@ let emptyCtx = {
 
 /* TODO: Convert to an actual Set */
 type opSet = list(op);
+/* Extra */
+type change = {
+  id: timestamp,
+  message: string,
+  /* Why not TimestampSet? */
+  ops: opSet,
+};
 type state = {
   replicaId,
   queue: opSet,
@@ -203,6 +212,8 @@ type state = {
   ops: list(timestamp),
   ctx,
   recv: opSet,
+  /* Extra */
+  changes: ReplicaIdMap.t(TimestampMap.t(change)),
 };
 
 let encodeState = ({queue, ops, ctx}) =>
@@ -546,7 +557,7 @@ let recv = (ops, state) => {
   let rec inter = state => {
     let maybeOp =
       state.recv
-      |> listFindOpt(op =>
+      |> listFindOpt((op: op) =>
            !List.mem(op.id, state.ops) && opHasFulfilledDeps(state, op)
          );
 
@@ -556,7 +567,7 @@ let recv = (ops, state) => {
         ...state,
         ctx: _applyOp(state.ctx, op),
         ops: [op.id, ...state.ops],
-        recv: state.recv |> List.filter(oldOp => oldOp.id != op.id),
+        recv: state.recv |> List.filter((oldOp: op) => oldOp.id != op.id),
       })
     | None => state
     };
@@ -595,4 +606,27 @@ let make = replicaId => {
   ops: [],
   ctx: emptyCtx,
   recv: [],
+  changes: ReplicaIdMap.empty,
+};
+
+let getReplicaChanges = (replicaId, state) =>
+  switch (state.changes |> ReplicaIdMap.find(replicaId)) {
+  | replicaChanges => replicaChanges
+  | exception Not_found => TimestampMap.empty
+  };
+
+/* let makeChangeOfDiff = (ctx, newCtx, state) => {
+     switch(ctx, newCtx) {
+       | ()
+       /* TODO: WRITE HERE <<<<<<< */
+     }
+   } */
+
+let change = (message, f, state) => {
+  let replicaChanges = state |> getReplicaChanges(state.replicaId);
+  {
+    ...state,
+    changes:
+      state.changes |> ReplicaIdMap.add(state.replicaId, replicaChanges),
+  };
 };

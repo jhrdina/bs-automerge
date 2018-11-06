@@ -104,3 +104,6 @@ let make: replicaId => state;
 type opSet;
 let recv: (opSet, state) => state;
 let send: state => opSet;
+
+type ctx;
+let change: (string, ctx => ctx, state) => state;
