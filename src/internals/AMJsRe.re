@@ -219,7 +219,17 @@ module ChangeSet = {
 
 module Clock = {
   type t = ImmJsRe.Map.t(string, int);
-  [@bs.module "automerge"] external lessOrEqual: (t, t) => bool = "";
+
+  let lessOrEqual: (t, t) => bool =
+    /* Taken from Automerge library */
+    [%bs.raw
+      (clock1, clock2) => "{
+        return clock1.keySeq().concat(clock2.keySeq()).reduce(
+          (result, key) => (result && clock1.get(key, 0) <= clock2.get(key, 0)),
+          true,
+        );
+      }"
+    ];
   /** [lessOrEqual(a, b)] returns true if all components of [a] are less than or equal to those of [b].
 
   Returns false if there is at least one component in which [a] is greater than [b] (that is, either clock1 is overall greater than clock2, or the clocks are incomparable).
