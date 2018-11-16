@@ -38,7 +38,7 @@ let decodeOpValue = json =>
       | Some(v) => Some(Bool(v))
       | None =>
         switch (json |> Js.Json.decodeNull) {
-        | Some(v) => Some(Null)
+        | Some(_) => Some(Null)
         | None => None
         }
       }

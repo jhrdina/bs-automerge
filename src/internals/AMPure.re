@@ -622,7 +622,8 @@ let getReplicaChanges = (replicaId, state) =>
      }
    } */
 
-let change = (message, f, state) => {
+/* TODO: Support messages */
+let change = (_message, _f, state) => {
   let replicaChanges = state |> getReplicaChanges(state.replicaId);
   {
     ...state,
