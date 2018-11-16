@@ -38,6 +38,7 @@ module type JsonMap = {
   let add: (string, json, t) => t;
   /** [add(key, value, mapJson, transaction)] checks that [mapJson] really
           is a map and sets its element at [key] to [value]. */
+  let remove: (string, t) => t;
   let get: (string, t) => option(json);
   /* let getWithConflicts: (string, t) => option(conflictable); */
   let fold: ((string, json, 'a) => 'a, t, 'a) => 'a;

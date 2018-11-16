@@ -69,6 +69,11 @@ module Json = {
 
     let get = (key, t) => Js.Dict.get(t, key);
 
+    let remove = (key, t: t) => {
+      Js.Dict.set(t, key, Obj.magic(Js.undefined));
+      t;
+    };
+
     let fold = (f, t, acc) =>
       t
       |> Js.Dict.keys
