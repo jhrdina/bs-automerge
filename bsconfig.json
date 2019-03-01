@@ -1,19 +1,9 @@
 {
   "name": "bs-automerge",
-  "version": "0.1.0",
   "sources": {
     "dir": "src",
     "subdirs": true
   },
-  "package-specs": {
-    "module": "commonjs",
-    "in-source": true
-  },
-  "suffix": ".bs.js",
-  "bsc-flags": ["-bs-g"],
   "bs-dependencies": ["bs-immutablejs", "rex-json"],
-  "warnings": {
-    "error": "+101"
-  },
   "refmt": 3
 }
