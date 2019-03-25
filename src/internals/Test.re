@@ -4,6 +4,10 @@ open InfixRe;
 /* Tight JS API demo */
 /* ================= */
 
+Js.log("============");
+Js.log("Tight JS API");
+Js.log("============");
+
 module AM = Automerge.Js;
 
 let d1 =
@@ -59,13 +63,30 @@ let merged2 = d2a->AM.applyChanges(changesFromRemote);
 switch (merged->Js.Dict.get("ufoo") |?> Js.Json.decodeArray) {
 | Some(ufoo) =>
   let conflicts = ufoo->AM.getArrayConflicts;
-  Js.log(conflicts);
+  Js.log2("ufoo conflicts:", conflicts);
   ();
 | None => ()
 };
-Js.log(merged);
-Js.log("===========");
-Js.log(merged2);
+
+let conflicts = merged->AM.getObjectConflicts;
+Js.log2("asdf conflicts:", conflicts);
+
+let merged2b =
+  AM.(
+    merged->change("get dizzy", d => {
+      switch (d->Js.Dict.get("ufoo") |?> Js.Json.decodeArray) {
+      | Some(ufoo) => ufoo[2] = Js.Json.number(9.0)
+      | None => ()
+      };
+      d->Js.Dict.set("ufoo", Js.Json.string("peperoni"));
+      d->Js.Dict.set("asdf", Js.Json.string("omangus"));
+    })
+  );
+let conflicts = merged2b->AM.getObjectConflicts;
+Js.log2("asdf conflicts:", conflicts);
+
+Js.log2("merged", merged);
+Js.log2("merged2", merged2);
 
 /* DREAM API */
 
@@ -92,6 +113,10 @@ let mm =
 /* ================ */
 /* Unified API demo */
 /* ================ */
+
+Js.log("===========");
+Js.log("Unified API");
+Js.log("===========");
 
 module UniAM = Automerge.UniJs;
 
@@ -164,9 +189,32 @@ let merged2 = d2a |> UniAM.applyChanges(changesFromRemote);
      ();
    | None => ()
    }; */
-Js.log(clockForRemote);
-Js.log("===========");
-Js.log(merged2);
+Js.log2("merged2", merged2);
+
+UniAM.(
+  merged2
+  |> root
+  |> Json.Map.getC("asdf")
+  |?>> (
+    conflictable => {
+      let conflictingValues =
+        switch (conflictable.conflicts) {
+        | Some(conflicts) =>
+          Json.ConflictValues.fold(
+            (_actorId, value, lst) => [value, ...lst],
+            conflicts,
+            [],
+          )
+        | None => []
+        };
+      Js.log(
+        [conflictable.value, ...conflictingValues]
+        ->Belt.List.keepMap(Json.asString),
+      );
+    }
+  )
+  |? ()
+);
 
 /* ====================================== */
 /* Dream API                              */
@@ -415,53 +463,58 @@ Js.log(merged2);
 /* AMPure playground                      */
 /* ====================================== */
 
-Js.log("===========");
-let logState = s => {
-  let reformat: string => string = [%bs.raw
-    s => "return JSON.stringify(JSON.parse(s), null, 3);"
-  ];
-  Js.log(reformat(Json.stringify(AMPure.encodeState(s))));
-};
+// Js.log("======");
+// Js.log("AMPure");
+// Js.log("======");
 
-let docA = AMPure.make("aaaaaaaa");
-logState(docA);
+/*
+ Js.log("===========");
+ let logState = s => {
+   let reformat: string => string = [%bs.raw
+     s => "return JSON.stringify(JSON.parse(s), null, 3);"
+   ];
+   Js.log(reformat(Json.stringify(AMPure.encodeState(s))));
+ };
 
-let docA =
-  AMPure.(
-    docA
-    |> makeAssign(doc, EmptyObject)
-    |> makeAssign(doc->get("AAA"), Int(1111))
-    |> makeAssign(doc->get("BBB"), Int(2222))
-    |> makeDelete(doc->get("AAA"))
-  );
+ let docA = AMPure.make("aaaaaaaa");
+ logState(docA);
 
-let ops = docA |> AMPure.send;
+ let docA =
+   AMPure.(
+     docA
+     |> makeAssign(doc, EmptyObject)
+     |> makeAssign(doc->get("AAA"), Int(1111))
+     |> makeAssign(doc->get("BBB"), Int(2222))
+     |> makeDelete(doc->get("AAA"))
+   );
 
-let docB =
-  AMPure.(
-    make("bbbbbbbbb")
-    |> makeAssign(doc, EmptyObject)
-    |> makeAssign(doc->get("CCC"), EmptyArray)
-  );
-let docB =
-  AMPure.(docB |> makeInsert(doc->get("CCC")->idx(0, docB), Int(42)));
-let docB =
-  AMPure.(
-    docB
-    |> makeAssign(doc->get("CCC")->idx(1, docB), Int(43))
-    |> recv(ops)
-  );
+ let ops = docA |> AMPure.send;
 
-let ops =
-  AMPure.(
-    docA
-    |> recv(docB |> send)
-    |> makeAssign(doc->get("BBB"), Int(333))
-    |> send
-  );
+ let docB =
+   AMPure.(
+     make("bbbbbbbbb")
+     |> makeAssign(doc, EmptyObject)
+     |> makeAssign(doc->get("CCC"), EmptyArray)
+   );
+ let docB =
+   AMPure.(docB |> makeInsert(doc->get("CCC")->idx(0, docB), Int(42)));
+ let docB =
+   AMPure.(
+     docB
+     |> makeAssign(doc->get("CCC")->idx(1, docB), Int(43))
+     |> recv(ops)
+   );
 
-let docB = AMPure.(docB |> makeAssign(doc->get("BBB"), Int(444)));
+ let ops =
+   AMPure.(
+     docA
+     |> recv(docB |> send)
+     |> makeAssign(doc->get("BBB"), Int(333))
+     |> send
+   );
 
-let docB = AMPure.(docB |> recv(ops));
+ let docB = AMPure.(docB |> makeAssign(doc->get("BBB"), Int(444)));
 
-logState(docB);
+ let docB = AMPure.(docB |> recv(ops));
+
+ logState(docB);*/

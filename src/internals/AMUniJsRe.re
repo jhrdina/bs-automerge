@@ -15,6 +15,30 @@ type transaction = AMJsRe.t;
 
 module Json = {
   type t = Js.Json.t;
+
+  module ConflictValues = {
+    type json = t;
+    type t = AMJsRe.conflict;
+    let fold = (f, t, acc) =>
+      Array.fold_left(
+        (acc, actorIdStr) =>
+          f(
+            ActorId.ofString(actorIdStr),
+            t->Js.Dict.unsafeGet(actorIdStr),
+            acc,
+          ),
+        acc,
+        t->Js.Dict.keys,
+      );
+
+    let get = (actorId, t) => Js.Dict.get(t, actorId);
+  };
+
+  type conflictable = {
+    value: t,
+    conflicts: option(ConflictValues.t),
+  };
+
   type nonrec transaction = transaction;
 
   let string = Js.Json.string;
@@ -49,9 +73,50 @@ module Json = {
       | exception (Invalid_argument(_)) => None
       };
 
+    let getC = (i, t) =>
+      get(i, t)
+      |?>> (
+        value => {
+          {value, conflicts: t |> AMJsRe.getArrayConflicts |> get(i)};
+        }
+      );
+
     let foldLeft = (f, acc, t) => Array.fold_left(f, acc, t);
 
+    let foldLeftC = (f, acc, t) =>
+      Js.Array.reducei(
+        (acc, value, i) =>
+          f(
+            acc,
+            {value, conflicts: t |> AMJsRe.getArrayConflicts |> get(i)},
+          ),
+        acc,
+        t,
+      );
+
     let foldRight = (f, t, acc) => Array.fold_right(f, t, acc);
+
+    let foldRightC = (f, t, acc) =>
+      Js.Array.reduceRighti(
+        (acc, value, i) =>
+          f(
+            {value, conflicts: t |> AMJsRe.getArrayConflicts |> get(i)},
+            acc,
+          ),
+        acc,
+        t,
+      );
+
+    let filter = (f, t) => {
+      let index = ref(Array.length(t) - 1);
+      while (index^ >= 0) {
+        if (!f(Js.Array.unsafe_get(t, index^))) {
+          Js.Array.spliceInPlace(~pos=index^, ~remove=1, t) |> ignore;
+        };
+        index := index^ - 1;
+      };
+      t;
+    };
   };
 
   module Map = {
@@ -68,6 +133,15 @@ module Json = {
     };
 
     let get = (key, t) => Js.Dict.get(t, key);
+
+    let getC = (key, t) =>
+      get(key, t)
+      |?>> (
+        value => {
+          value,
+          conflicts: t |> AMJsRe.getObjectConflicts |> get(key),
+        }
+      );
 
     let remove: (string, t) => t = [%bs.raw
       (key, t) => "{
@@ -87,6 +161,22 @@ module Json = {
              | Some(value) => f(key, value, acc)
              | None => acc
              },
+           acc,
+         );
+
+    let foldC = (f, t, acc) =>
+      t
+      |> Js.Dict.keys
+      |> Array.fold_left(
+           (acc, key) =>
+             f(
+               key,
+               {
+                 value: Js.Dict.unsafeGet(t, key),
+                 conflicts: t |> AMJsRe.getObjectConflicts |> get(key),
+               },
+               acc,
+             ),
            acc,
          );
   };

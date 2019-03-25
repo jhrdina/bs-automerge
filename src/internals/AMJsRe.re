@@ -1,5 +1,7 @@
 open InfixRe;
 
+// TYPES & MODULES
+
 type uuid = string;
 
 type op;
@@ -26,41 +28,6 @@ type opValue =
   | String(string)
   | Bool(bool)
   | Null;
-
-let decodeOpValue = json =>
-  switch (json |> Js.Json.decodeNumber) {
-  | Some(v) => Some(Number(v))
-  | None =>
-    switch (json |> Js.Json.decodeString) {
-    | Some(v) => Some(String(v))
-    | None =>
-      switch (json |> Js.Json.decodeBoolean) {
-      | Some(v) => Some(Bool(v))
-      | None =>
-        switch (json |> Js.Json.decodeNull) {
-        | Some(_) => Some(Null)
-        | None => None
-        }
-      }
-    }
-  };
-
-/* let decodeOp = json =>
-   switch (json |> Js.Json.decodeObject) {
-   | Some(dict) =>
-     switch (
-       dict |> Js.Dict.get("action") |?> Js.Json.decodeString,
-       dict |> Js.Dict.get("obj") |?> Js.Json.decodeString,
-       dict |> Js.Dict.get("key") |?> Js.Json.decodeString,
-       dict |> Js.Dict.get("value") |?> decodeOpValue,
-      ) {
-      | (Some("set"), Some(obj), Some(key), Some(opValue)) =>
-      }
-   | None =>
-   }; */
-
-/* TODO: Finish proper parser */
-let decodeOp: Js.Json.t => option(op) = json => Some(Obj.magic(json));
 
 /*
  type insOp = {
@@ -99,6 +66,51 @@ type change = {
   message: string,
   ops: array(op),
 };
+
+/* actorId -> suggested value */
+type conflict = Js.Dict.t(Js.Json.t);
+/* fieldName -> actorId -> suggested value */
+type objectConflicts = Js.Dict.t(conflict);
+/* index -> actorId -> suggested value */
+type arrayConflicts = array(conflict);
+
+// CODECS
+
+let decodeOpValue = json =>
+  switch (json |> Js.Json.decodeNumber) {
+  | Some(v) => Some(Number(v))
+  | None =>
+    switch (json |> Js.Json.decodeString) {
+    | Some(v) => Some(String(v))
+    | None =>
+      switch (json |> Js.Json.decodeBoolean) {
+      | Some(v) => Some(Bool(v))
+      | None =>
+        switch (json |> Js.Json.decodeNull) {
+        | Some(_) => Some(Null)
+        | None => None
+        }
+      }
+    }
+  };
+
+/* let decodeOp = json =>
+   switch (json |> Js.Json.decodeObject) {
+   | Some(dict) =>
+     switch (
+       dict |> Js.Dict.get("action") |?> Js.Json.decodeString,
+       dict |> Js.Dict.get("obj") |?> Js.Json.decodeString,
+       dict |> Js.Dict.get("key") |?> Js.Json.decodeString,
+       dict |> Js.Dict.get("value") |?> decodeOpValue,
+      ) {
+      | (Some("set"), Some(obj), Some(key), Some(opValue)) =>
+      }
+   | None =>
+   }; */
+
+/* TODO: Finish proper parser */
+let decodeOp: Js.Json.t => option(op) = json => Some(Obj.magic(json));
+
 let decodeDeps: Js.Json.t => option(Js.Dict.t(int)) =
   json =>
     switch (json |> Js.Json.decodeObject) {
@@ -139,16 +151,6 @@ let decodeChange = json =>
   | None => None
   };
 
-/* actorId -> suggested value */
-type conflict = Js.Dict.t(Js.Json.t);
-/* fieldName -> actorId -> suggested value */
-type objectConflicts = Js.Dict.t(conflict);
-/* index -> actorId -> suggested value */
-type arrayConflicts = array(conflict);
-
-[@bs.get]
-external getArrayConflicts: array('a) => arrayConflicts = "_conflicts";
-
 let decodeArrayItemsStrict = (itemDecoder, arr) => {
   let newArr = [||];
   let invalid =
@@ -175,6 +177,8 @@ module ChangeSet = {
     | exception _ => None
     };
 };
+
+// Main methods
 
 /*
  pole obcas indexovane jako [actorId]:[index], napr.
@@ -362,6 +366,12 @@ let getMissingChanges: (t, Clock.t) => ChangeSet.t =
 
 [@bs.module "automerge"]
 external getConflicts: (t, ImmJsRe.List.t(change)) => objectConflicts = "";
+
+[@bs.get]
+external getArrayConflicts: array('a) => arrayConflicts = "_conflicts";
+
+[@bs.get]
+external getObjectConflicts: Js.Dict.t('a) => objectConflicts = "_conflicts";
 
 let getClock: t => Clock.t = [%raw
   doc => "{return doc._state.get('opSet').get('clock')}"
