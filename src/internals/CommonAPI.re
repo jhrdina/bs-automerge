@@ -5,7 +5,7 @@ module type Stringifiable = {
 };
 
 module type CommonAPI = {
-  module ActorId: Stringifiable;
+  type actorId;
 
   type transaction;
 
@@ -30,8 +30,8 @@ module type CommonAPI = {
       type json = t;
       type t;
 
-      let fold: ((ActorId.t, json, 'a) => 'a, t, 'a) => 'a;
-      let get: (ActorId.t, t) => option(json);
+      let fold: ((actorId, json, 'a) => 'a, t, 'a) => 'a;
+      let get: (actorId, t) => option(json);
     };
 
     type conflictable = {
@@ -89,7 +89,7 @@ module type CommonAPI = {
 
   type t;
 
-  let make: ActorId.t => t;
+  let make: actorId => t;
   let change: (string, Json.Map.t => Json.Map.t, t) => t;
   let root: t => Json.Map.t;
 
@@ -102,4 +102,4 @@ module type CommonAPI = {
 };
 
 module type Maker =
-  (ActorId: Stringifiable) => CommonAPI with module ActorId = ActorId;
+  (ActorId: Stringifiable) => CommonAPI with type actorId = ActorId.t;

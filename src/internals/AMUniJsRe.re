@@ -1,7 +1,7 @@
 open InfixRe;
 
 module Make = (ActorId: CommonAPI.Stringifiable) => {
-  module ActorId = ActorId;
+  type actorId = ActorId.t;
 
   module ChangeSet = AMJsRe.ChangeSet;
 
