@@ -118,11 +118,18 @@ Js.log("===========");
 Js.log("Unified API");
 Js.log("===========");
 
-module UniAM = Automerge.UniJs;
+module MActorId = {
+  type t = string;
+  let ofString = t => Some(t);
+  let toString = t => t;
+  let ofStringExn = t => t;
+};
+
+module UniAM = Automerge.UniJs.Make(MActorId);
 
 let d1 =
   UniAM.(
-    make(ActorId.ofString("aaaaaaaa"))
+    make(MActorId.ofStringExn("aaaaaaaa"))
     |> change("test", root =>
          Json.(
            root
@@ -147,7 +154,7 @@ let merge = (d1, d2) =>
 
 let d2a =
   UniAM.(
-    make(ActorId.ofString("bbbbbbbb"))
+    make(MActorId.ofStringExn("bbbbbbbb"))
     |> merge(d1)
     |> change("get crazy", root => {
          open Json;

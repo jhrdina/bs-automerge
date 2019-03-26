@@ -1,4 +1,12 @@
+module type Stringifiable = {
+  type t;
+  let toString: t => string;
+  let ofString: string => option(t);
+};
+
 module type CommonAPI = {
+  module ActorId: Stringifiable;
+
   type transaction;
 
   module ChangeSet: {
@@ -12,12 +20,6 @@ module type CommonAPI = {
     let lessOrEqual: (t, t) => bool;
     let toString: t => string;
     let fromString: string => option(t);
-  };
-
-  module ActorId: {
-    type t;
-    let ofString: string => t;
-    let toString: t => string;
   };
 
   module Json: {
@@ -98,3 +100,6 @@ module type CommonAPI = {
   let save: t => string;
   let load: string => option(t);
 };
+
+module type Maker =
+  (ActorId: Stringifiable) => CommonAPI with module ActorId = ActorId;
