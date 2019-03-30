@@ -27,7 +27,7 @@
   "dependencies": {
     "automerge": "^0.8.0",
     "bs-immutablejs": "github:reasonml-community/bs-immutablejs",
-    "rex-json": "^1.4.0"
+    "rex-json": "github:jhrdina/rex-json#js-perf-hack"
   },
   "devDependencies": {
     "bs-platform": "^4.0.18"
