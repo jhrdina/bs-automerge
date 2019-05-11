@@ -1,3 +1,5 @@
+/** Experimental purely functional implementation of the {{: https:/www.cl.cam.ac.uk/~arb33/papers/KleppmannBeresford-CRDT-JSON-TPDS2017.pdf} original paper}. It is much smaller than Automerge, however it lacks a lot of features and performance improvements Automerge added on top of the article. */
+
 type replicaId = string;
 module ReplicaIdMap = Map.Make(String);
 
@@ -23,7 +25,7 @@ let encodeValue =
   fun
   | String(v) => "String(" ++ v ++ ")"
   | Int(v) => "Int(" ++ string_of_int(v) ++ ")"
-  | Float(v) => "Float(" ++ string_of_float(v) ++ ")"
+  | Float(v) => "Float(" ++ (v |> Js.Float.toString) ++ ")"
   | Bool(v) => "Bool(" ++ string_of_bool(v) ++ ")"
   | Null => "Null"
   | EmptyObject => "EmptyObject"
@@ -132,10 +134,8 @@ let rec encodeCtx = ({items, next, pres, values}) => {
   let encodeItems = items =>
     Json.Object(
       TypedKeyMap.fold(
-        (typedKey, ctx, acc) => [
-          (typedKey |> encodeTypedKey, ctx |> encodeCtx),
-          ...acc,
-        ],
+        (typedKey, ctx, acc) =>
+          [(typedKey |> encodeTypedKey, ctx |> encodeCtx), ...acc],
         items,
         [],
       ),
@@ -143,13 +143,14 @@ let rec encodeCtx = ({items, next, pres, values}) => {
   let encodeNext = next =>
     Json.Object(
       CursorItemMap.fold(
-        (cursorItemA, cursorItemB, acc) => [
-          (
-            cursorItemA |> encodeCursorItem,
-            Json.String(cursorItemB |> encodeCursorItem),
-          ),
-          ...acc,
-        ],
+        (cursorItemA, cursorItemB, acc) =>
+          [
+            (
+              cursorItemA |> encodeCursorItem,
+              Json.String(cursorItemB |> encodeCursorItem),
+            ),
+            ...acc,
+          ],
         next,
         [],
       ),
@@ -157,15 +158,16 @@ let rec encodeCtx = ({items, next, pres, values}) => {
   let encodePres = pres =>
     Json.Object(
       CursorItemMap.fold(
-        (ci, tss, acc) => [
-          (
-            ci |> encodeCursorItem,
-            Json.Array(
-              tss |> List.map(ts => Json.String(encodeTimestamp(ts))),
+        (ci, tss, acc) =>
+          [
+            (
+              ci |> encodeCursorItem,
+              Json.Array(
+                tss |> List.map(ts => Json.String(encodeTimestamp(ts))),
+              ),
             ),
-          ),
-          ...acc,
-        ],
+            ...acc,
+          ],
         pres,
         [],
       ),
@@ -173,10 +175,11 @@ let rec encodeCtx = ({items, next, pres, values}) => {
   let encodeValues = values =>
     Json.Object(
       TimestampMap.fold(
-        (ts, value, acc) => [
-          (ts |> encodeTimestamp, Json.String(encodeValue(value))),
-          ...acc,
-        ],
+        (ts, value, acc) =>
+          [
+            (ts |> encodeTimestamp, Json.String(encodeValue(value))),
+            ...acc,
+          ],
         values,
         [],
       ),

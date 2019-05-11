@@ -1,3 +1,5 @@
+/** Binding that closely copies the usage experience of the original JavaScript library Automerge, including mutations. */;
+
 open InfixRe;
 
 // TYPES & MODULES

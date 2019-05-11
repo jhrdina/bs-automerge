@@ -1,9 +1,15 @@
 {
   "name": "bs-automerge",
-  "sources": {
-    "dir": "src",
-    "subdirs": true
-  },
+  "sources": [
+    {
+      "dir": "src",
+      "subdirs": true
+    },
+    {
+      "dir": "examples",
+      "type": "dev"
+    }
+  ],
   "bs-dependencies": ["bs-immutablejs", "rex-json"],
   "refmt": 3
 }

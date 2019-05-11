@@ -1,3 +1,5 @@
+/** Experimental purely functional implementation of the {{: https:/www.cl.cam.ac.uk/~arb33/papers/KleppmannBeresford-CRDT-JSON-TPDS2017.pdf} original paper}. It is much smaller than Automerge, however it lacks a lot of features and performance improvements Automerge added on top of the article. */
+
 type replicaId = string;
 type timestamp = (int, replicaId);
 let encodeTimestamp: ((int, string)) => string;

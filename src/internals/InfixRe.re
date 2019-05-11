@@ -1,3 +1,5 @@
+/** Option infix operators taken from https://github.com/jaredly/rex-json/blob/master/src/Json.re */
+
 let (|?>) = (o, fn) =>
   switch (o) {
   | None => None
