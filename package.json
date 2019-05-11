@@ -1,6 +1,6 @@
 {
   "name": "bs-automerge",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Reason + BuckleScript bindings to Automerge",
   "main": "index.js",
   "scripts": {
