@@ -1,6 +1,6 @@
 {
   "name": "bs-automerge",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Reason + BuckleScript bindings to Automerge",
   "main": "index.js",
   "scripts": {
@@ -30,6 +30,6 @@
     "rex-json": "github:jhrdina/rex-json#js-perf-hack"
   },
   "devDependencies": {
-    "bs-platform": "^4.0.18"
+    "bs-platform": "^5.0.0"
   }
 }
